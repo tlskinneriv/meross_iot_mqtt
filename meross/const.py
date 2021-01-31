@@ -1,0 +1,6 @@
+# Methods for MQTT messages
+METH_GETACK = 'GETACK'
+METH_SETACK = 'SETACK'
+METH_GET = 'GET'
+METH_SET = 'SET'
+METH_PUSH = 'PUSH'
