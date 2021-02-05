@@ -55,6 +55,14 @@ class Namespace(Enum):
     HUB_MTS100_TEMPERATURE = 'Appliance.Hub.Mts100.Temperature'
     HUB_MTS100_MODE = 'Appliance.Hub.Mts100.Mode'
 
+    # Supports LEDMode
+    SYSTEM_LEDMODE = 'Appliance.System.LedMode'
+
 class Method(Enum):
     SET = 'SET'
     GET = 'GET'
+
+class LEDMode(Enum):
+    ALWAYS_OFF = 0
+    ON_WHEN_LIGHT_ON = 1
+    NIGHT_LIGHT = 2

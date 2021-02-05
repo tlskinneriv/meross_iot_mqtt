@@ -80,6 +80,7 @@ class MerossSwitchEntity(SwitchEntity):
         }
 
     def initialize(self):
+        self._send_mqtt_payload(self._device.init_led())
         self._send_mqtt_payload(self._device.request_update())
     
     def turn_on(self):

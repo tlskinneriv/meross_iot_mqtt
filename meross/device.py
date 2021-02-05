@@ -5,8 +5,8 @@ import string
 from time import time
 from hashlib import md5
 
-from .mixins import ToggleXMixin
-from .enums import Namespace, Method
+from .mixins import ToggleXMixin, LEDModeMixin
+from .enums import Namespace, Method, LEDMode
 from .utils import mangle, valid_header
 from .const import (METH_PUSH, METH_GETACK)
 
@@ -57,15 +57,18 @@ class MerossBaseDevice(object):
         """ This needs to be overriden by the device """
         return None
 
-class MerossSwitchDevice(ToggleXMixin, MerossBaseDevice):
+class MerossSwitchDevice(ToggleXMixin, LEDModeMixin, MerossBaseDevice):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def turn_on(self):
-        return self.togglex_turn_on()
+        return self.togglex_turn_on(0)
 
     def turn_off(self):
-        return self.togglex_turn_off()
+        return self.togglex_turn_off(0)
+
+    def init_led(self):
+        return self.set_led_mode(LEDMode.ON_WHEN_LIGHT_ON)
 
     def update(self, payload_json):
         """ return a hass supported state response """
