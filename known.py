@@ -14,6 +14,6 @@ KNOWN_DEVICES = {
     },
     'mss120b': {
         CONF_PLATFORM: SupportedPlatforms.SWITCH.value,
-        CONF_NUMCHANNELS: 2
+        CONF_NUMCHANNELS: 3
     }
 }

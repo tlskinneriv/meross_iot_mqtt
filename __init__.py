@@ -28,8 +28,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # hass.data[DOMAIN][entry.entry_id] = MyApi(...)
 
     for component in PLATFORMS:
-        _LOGGER.warning(entry)
-        _LOGGER.warning(component)
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, component)
         )

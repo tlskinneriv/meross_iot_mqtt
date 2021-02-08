@@ -1,7 +1,7 @@
 {
   "domain": "meross_iot_mqtt",
   "name": "Meross IoT MQTT",
-  "config_flow": false,
+  "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/meross_iot_mqtt",
   "requirements": [],
   "ssdp": [],

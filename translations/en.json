@@ -10,7 +10,7 @@
             },
             "user": {
                 "data": {
-                    "mac": "Device Name",
+                    "mac": "MAC Address",
                     "num_channels": "Number of Channels",
                     "model": "Model",
                     "platform": "Platform",
@@ -19,7 +19,7 @@
             },
             "discovery_confirm": {
                 "data": {
-                    "mac": "Device Name",
+                    "mac": "MAC Address",
                     "num_channels": "Number of Channels",
                     "model": "Model",
                     "platform": "Platform",
