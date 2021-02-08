@@ -10,5 +10,8 @@
   "dependencies": ["mqtt"],
   "codeowners": [
     "@tlskinneriv"
+  ],
+  "mqtt": [
+    "/appliance/+/publish"
   ]
 }

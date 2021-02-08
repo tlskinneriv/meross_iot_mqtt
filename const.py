@@ -1,7 +1,10 @@
 """Constants for the Meross IoT MQTT integration."""
 
 DOMAIN = "meross_iot_mqtt"
+
+# Configuration Parameters
 CONF_UUID = "uuid"
-CONF_MAC = "mac"
 CONF_MODEL = "model"
-CONF_DEVICENAME = "device_name"
+CONF_MAC = "mac"
+CONF_NUMCHANNELS = "num_channels"
+CONF_PLATFORM = "platform"

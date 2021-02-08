@@ -18,21 +18,21 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 class MerossBaseDevice(object):
-    def __init__(self, uuid, mac, device_name):
-        self._uuid = uuid
-        self._mac = mac
-        self._device_name = device_name
+    def __init__(self, uuid, mac, channel):
+        self.uuid = uuid
+        self.mac = mac
         self.state = STATE_UNKNOWN
+        self.channel = channel
 
     def _get_message_header(self, method: Method, namespace: Namespace):
         messageId = md5(''.join(random.choice(string.ascii_lowercase) for i in range(16)).encode()).hexdigest()
         timestamp = int(time())
-        key = mangle(self._device_name)
+        key = mangle(self.mac)
 
         sign = md5('{}{}{}'.format(messageId, key, timestamp).encode()).hexdigest()
 
         header = {
-            'from': '/appliance/{}/publish'.format(self._uuid),
+            'from': '/appliance/{}/publish'.format(self.uuid),
             'messageId': messageId,
             'method': method.value,
             'namespace': namespace.value,
@@ -57,15 +57,27 @@ class MerossBaseDevice(object):
         """ This needs to be overriden by the device """
         return None
 
+    @staticmethod
+    def get_auto_config_info(json_payload):
+        payload = json.loads(json_payload)
+        if payload['header']['namespace'] == Namespace.CONTROL_BIND.value:
+            hardware_info = payload['payload']['bind']['hardware']
+            return {
+                'uuid': hardware_info['uuid'],
+                'mac': hardware_info['macAddress'],
+                'model': hardware_info['type']
+            }
+        return {}
+
 class MerossSwitchDevice(ToggleXMixin, LEDModeMixin, MerossBaseDevice):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def turn_on(self):
-        return self.togglex_turn_on(0)
+        return self.togglex_turn_on(self.channel)
 
     def turn_off(self):
-        return self.togglex_turn_off(0)
+        return self.togglex_turn_off(self.channel)
 
     def init_led(self):
         return self.set_led_mode(LEDMode.ON_WHEN_LIGHT_ON)

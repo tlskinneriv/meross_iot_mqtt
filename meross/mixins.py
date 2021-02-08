@@ -1,6 +1,6 @@
 from .enums import Namespace, Method, LEDMode
 
-from homeassistant.const import STATE_ON, STATE_OFF
+from homeassistant.const import STATE_ON, STATE_OFF, STATE_UNAVAILABLE
 
 class ToggleXMixin(object):
     def togglex_turn_on(self, channel: int):
@@ -24,10 +24,15 @@ class ToggleXMixin(object):
     def togglex_get_state(self, payload):
         if payload.get('all'):
             """ deal with digest payload """
-            togglex = payload.get('all').get('digest').get('togglex')
+            togglex = payload.get('all').get('digest').get('togglex', list())
+            # check to make sure we're outside the range of the list
         else:
-            togglex = payload.get('togglex')
-        return STATE_ON if togglex[0]['onoff'] == 1 else STATE_OFF
+            togglex = payload.get('togglex', list())
+        togglex = [x for x in list(togglex) if x['channel'] == self.channel]
+        if not togglex:
+            return STATE_UNAVAILABLE
+        togglex = togglex[0]
+        return STATE_ON if togglex['onoff'] == 1 else STATE_OFF
 
 class LEDModeMixin(object):
     def set_led_mode(self, led_mode):

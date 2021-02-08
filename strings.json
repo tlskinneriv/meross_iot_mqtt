@@ -4,6 +4,24 @@
     "step": {
       "confirm": {
         "description": "[%key:common::config_flow::description::confirm_setup%]"
+      },
+      "user": {
+        "data": {
+          "mac": "Device Name",
+          "num_channels": "Number of Channels",
+          "model": "Model",
+          "platform": "Platform",
+          "uuid": "UUID"
+        }
+      },
+      "discovery_confirm": {
+        "data": {
+          "mac": "Device Name",
+          "num_channels": "Number of Channels",
+          "model": "Model",
+          "platform": "Platform",
+          "uuid": "UUID"
+        }
       }
     },
     "abort": {
