@@ -3,6 +3,7 @@ from enum import Enum
 # Supported Platforms
 class SupportedPlatforms(Enum):
     SWITCH = 'switch'
+    COVER = 'cover'
 
     @classmethod
     def platform_list(cls):

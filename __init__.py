@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.components import mqtt
 from homeassistant.helpers import entity_registry as er
 
-from .const import DOMAIN
+from .const import DOMAIN, CONF_PLATFORM, CONF_UUID
 from .enums import SupportedPlatforms
 
 # TODO List the platforms that you want to support.
@@ -27,11 +27,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # TODO Store an API object for your platforms to access
     # hass.data[DOMAIN][entry.entry_id] = MyApi(...)
 
-    for component in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+    platform = entry.data[CONF_PLATFORM]
+    uuid = entry.data[CONF_UUID]
 
+    if platform not in PLATFORMS:
+        _LOGGER.warning('Config entry for {} with platform {} cannot be setup because platform {} is not supported.'.format(uuid, platform, platform))
+    else:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, platform)
+        )
     return True
 
 

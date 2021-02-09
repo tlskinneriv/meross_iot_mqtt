@@ -8,13 +8,13 @@ from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
 
-from homeassistant.components.switch import (PLATFORM_SCHEMA, SwitchEntity)
-from homeassistant.const import (STATE_ON, STATE_OFF, STATE_UNKNOWN)
+from homeassistant.components.cover import (PLATFORM_SCHEMA, CoverEntity, DEVICE_CLASS_GARAGE, SUPPORT_CLOSE, SUPPORT_OPEN)
+from homeassistant.const import (STATE_OPEN, STATE_CLOSED, STATE_UNKNOWN, STATE_OPENING, STATE_CLOSING)
 from homeassistant.core import callback
 
 from .const import (CONF_MODEL, CONF_UUID, CONF_MAC, DOMAIN, CONF_NUMCHANNELS)
 
-from .meross.device import MerossSwitchDevice
+from .meross.device import MerossGarageDoorDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,41 +30,59 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 #SCAN_INTERVAL = timedelta(minutes=2)
 
 async def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
-    """ Set up the Meross Switch """
+    """ Set up the Meross Cover """
     uuid = config[CONF_UUID]
     model = config[CONF_MODEL]
     mac = config[CONF_MAC]
     num_channels = config[CONF_NUMCHANNELS]
 
     # Create entities and add them
-    devices = [MerossSwitchEntity(uuid, model, mac, channel) for channel in range(num_channels)]
+    devices = [MerossCoverEntity(uuid, model, mac, channel) for channel in range(num_channels)]
     async_add_devices(devices)
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
-    """ Set up the Meross Switch """
+    """ Set up the Meross Cover """
     uuid = config_entry.data[CONF_UUID]
     model = config_entry.data[CONF_MODEL]
     mac = config_entry.data[CONF_MAC]
     num_channels = config_entry.data[CONF_NUMCHANNELS]
 
     # Create device & add it
-    devices = [MerossSwitchEntity(uuid, model, mac, channel) for channel in range(num_channels)]
+    devices = [MerossCoverEntity(uuid, model, mac, channel) for channel in range(num_channels)]
     async_add_devices(devices)
 
-class MerossSwitchEntity(SwitchEntity):
+class MerossCoverEntity(CoverEntity):
     
     def __init__(self, uuid, model, mac, channel=0):
         self.entity_id = 'switch.meross_iot_mqtt_{}_{}'.format(uuid, channel)
-        self._device = MerossSwitchDevice(uuid=uuid, mac=mac, channel=channel)
+        self._device = MerossGarageDoorDevice(uuid=uuid, mac=mac, channel=channel)
         self._mqtt_topic = '/appliance/{}/subscribe'.format(uuid)
         self._model = model
         
     should_poll = False
+
+    @property
+    def device_class(self):
+        """Return the class of this device, from component DEVICE_CLASSES."""
+        return DEVICE_CLASS_GARAGE
+
+    @property
+    def supported_features(self):
+        """Flag supported features."""
+        return SUPPORT_OPEN | SUPPORT_CLOSE
     
     @property
-    def is_on(self):
-        True if self.state == STATE_ON else False
+    def is_closed(self):
+        return True if self.state == STATE_CLOSED else False
 
+    @property
+    def is_opening(self):
+        return True if self.state == STATE_OPENING else False
+
+    @property
+    def is_closing(self):
+        return True if self.state == STATE_CLOSING else False
+    
     @property
     def state(self):
         return self._device.state
@@ -72,7 +90,7 @@ class MerossSwitchEntity(SwitchEntity):
     @property
     def name(self):
         """ Default name for a new switch """
-        return 'Meross {} Switch {}'.format(self._model, self._device.channel)
+        return 'Meross {} Garage Door Opener {}'.format(self._model, self._device.channel)
 
     @property
     def unique_id(self):
@@ -83,13 +101,12 @@ class MerossSwitchEntity(SwitchEntity):
         """Information about this entity/device."""
         return {
             "identifiers": {(DOMAIN, self._device.uuid)},
-            "name": "Meross {} Switch".format(self._model),
+            "name": "Meross {} Garage Door Opener".format(self._model),
             "manufacturer": 'Meross',
             "model": self._model
         }
 
     def initialize(self):
-        self._send_mqtt_payload(self._device.init_led())
         self._send_mqtt_payload(self._device.request_update())
 
     async def async_added_to_hass(self):
@@ -105,11 +122,15 @@ class MerossSwitchEntity(SwitchEntity):
         # Initialize the device
         self.initialize()
     
-    def turn_on(self):
-        self._send_mqtt_payload(self._device.turn_on())
+    def open_cover(self):
+        self._send_mqtt_payload(self._device.open())
+        self._device.state = STATE_OPENING
+        self.schedule_update_ha_state()
 
-    def turn_off(self):
-        self._send_mqtt_payload(self._device.turn_off())
+    def close_cover(self):
+        self._send_mqtt_payload(self._device.close())
+        self._device.state = STATE_CLOSING
+        self.schedule_update_ha_state()
 
     def update(self):
         self._send_mqtt_payload(self._device.request_update())

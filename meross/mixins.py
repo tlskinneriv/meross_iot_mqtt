@@ -30,9 +30,9 @@ class ToggleXMixin(object):
             togglex = payload.get('togglex', list())
         togglex = [x for x in list(togglex) if x['channel'] == self.channel]
         if not togglex:
-            return STATE_UNAVAILABLE
+            return None
         togglex = togglex[0]
-        return STATE_ON if togglex['onoff'] == 1 else STATE_OFF
+        return 1 if togglex['onoff'] == 1 else 0
 
 class LEDModeMixin(object):
     def set_led_mode(self, led_mode):
@@ -42,3 +42,36 @@ class LEDModeMixin(object):
             }
         }
         return self._get_mqtt_payload(Method.SET, Namespace.SYSTEM_LEDMODE, payload_options)
+
+class GarageOpenerMixin(object):
+    def garage_open(self, channel: int):
+        payload_options = {
+            'state': {
+                'channel': channel,
+                'open': 1
+            }
+        }
+        return self._get_mqtt_payload(Method.SET, Namespace.GARAGE_DOOR_STATE, payload_options)
+
+    def garage_close(self, channel: int):
+        payload_options = {
+            'state': {
+                'channel': channel,
+                'open': 0
+            }
+        }
+        return self._get_mqtt_payload(Method.SET, Namespace.GARAGE_DOOR_STATE, payload_options)
+
+    def garage_get_state(self, payload):
+        if payload.get('all'):
+            """ deal with digest payload """
+            garageDoor = payload.get('all').get('digest').get('garageDoor', list())
+            # check to make sure we're outside the range of the list
+        else:
+            # garage door state is actually in the 'state' key
+            garageDoor = payload.get('state', list())
+        garageDoor = [x for x in list(garageDoor) if x['channel'] == self.channel]
+        if not garageDoor:
+            return None
+        garageDoor = garageDoor[0]
+        return 1 if garageDoor['open'] == 1 else 0
