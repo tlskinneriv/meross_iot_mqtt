@@ -28,7 +28,9 @@ class ToggleXMixin(object):
             # check to make sure we're outside the range of the list
         else:
             togglex = payload.get('togglex', list())
-        togglex = [x for x in list(togglex) if x['channel'] == self.channel]
+        if not isinstance(togglex, list):
+            togglex = [togglex]
+        togglex = [x for x in togglex if x['channel'] == self.channel]
         if not togglex:
             return None
         togglex = togglex[0]
