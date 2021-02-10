@@ -26,9 +26,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_NUMCHANNELS, default=1): All(int, Range(min=1))
 })
 
-# Default scan interval time
-#SCAN_INTERVAL = timedelta(minutes=2)
-
 async def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     """ Set up the Meross Switch """
     uuid = config[CONF_UUID]
@@ -59,11 +56,13 @@ class MerossSwitchEntity(SwitchEntity):
         self._mqtt_topic = '/appliance/{}/subscribe'.format(uuid)
         self._model = model
         
-    should_poll = False
+    @property
+    def should_poll(self):
+        return False
     
     @property
     def is_on(self):
-        True if self.state == STATE_ON else False
+        return True if self.state == STATE_ON else False
 
     @property
     def state(self):
