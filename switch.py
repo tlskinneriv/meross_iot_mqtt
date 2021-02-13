@@ -9,7 +9,7 @@ from datetime import timedelta
 import homeassistant.helpers.config_validation as cv
 
 from homeassistant.components.switch import (PLATFORM_SCHEMA, SwitchEntity)
-from homeassistant.const import (STATE_ON, STATE_OFF, STATE_UNKNOWN)
+from homeassistant.const import (STATE_ON, STATE_OFF, STATE_UNKNOWN, STATE_UNAVAILABLE)
 from homeassistant.core import callback
 
 from .const import (CONF_MODEL, CONF_UUID, CONF_MAC, DOMAIN, CONF_NUMCHANNELS)
@@ -58,7 +58,7 @@ class MerossSwitchEntity(SwitchEntity):
         
     @property
     def should_poll(self):
-        return False
+        return True
     
     @property
     def is_on(self):
@@ -111,7 +111,8 @@ class MerossSwitchEntity(SwitchEntity):
         self._send_mqtt_payload(self._device.turn_off())
 
     def update(self):
-        self._send_mqtt_payload(self._device.request_update())
+        if self._device.state == STATE_UNKNOWN or self._device.state == STATE_UNAVAILABLE:
+            self._send_mqtt_payload(self._device.request_update())
 
     def _send_mqtt_payload(self, mqtt_payload):
         self.hass.components.mqtt.publish(self._mqtt_topic, mqtt_payload)
